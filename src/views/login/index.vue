@@ -6,18 +6,19 @@
         v-model="user.mobile"
         name="手机号"
         placeholder="手机号"
-        :rules="[{ required: true, message: '请填写用户名' }]"
+        :rules="userFormRules.mobile"
+        type="number"
         ><i slot="left-icon" class="toutiao toutiao-shouji"></i>
       </van-field>
       <van-field
         v-model="user.code"
         name="密码"
         placeholder="密码"
-        :rules="[{ required: true, message: '请填写密码' }]"
+        :rules="userFormRules.code"
         ><i slot="left-icon" class="toutiao toutiao-yanzhengma"></i>\
         <template #button>
-          <van-button class="send-sms-btn" round size="small" type="default"
-            >获取验证码</van-button
+          <van-button native-type="button" class="send-sms-btn" round size="small" type="default"
+            @click="onSendSms">获取验证码</van-button
           >
         </template>
       </van-field>
@@ -41,20 +42,35 @@ export default {
       user: {
         mobile: "",
         code: "",
+      },
+      userFormRules:{
+        mobile:[
+          { required: true, message: '请填写用户名' },
+          {pattern:/1[3|5|7|8]\d{9}/,message:'手机号格式错误'},
+          ],
+        code:[
+          { required: true, message: '请填写用户名' },
+          {pattern:/\d{6}/,message:'验证码格式错误'},
+          ]
       }
     }
   },
   methods: {
     async onSubmit() {
       const user = this.user;
+      this.$toast.loading({
+        message: "登录中...",
+        forbidClick: true,
+        duration:0
+      })
       try {
         const res = await login(user);
         console.log("登录成功", res);
+        this.$toast.success("登录成功")
       } catch (err) {
-        if(err.response.status===400)
-        console.log("手机号或验证码错误", err);
-        else
-        console.log("登录失败", err)
+        if (err.response.status === 400)
+        this.$toast.fail("手机号或验证码错误")
+        else this.$toast.fail("登录失败")
       }
     }
   }
