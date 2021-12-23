@@ -1,10 +1,10 @@
 <template>
   <div class="login-container">
     <van-nav-bar title="登录" class="page-nav-bar" />
-    <van-form @submit="onSubmit()">
+    <van-form ref="loginForm" @submit="onSubmit()">
       <van-field
         v-model="user.mobile"
-        name="手机号"
+        name="mobile"
         placeholder="手机号"
         :rules="userFormRules.mobile"
         type="number"
@@ -12,14 +12,16 @@
       </van-field>
       <van-field
         v-model="user.code"
-        name="密码"
+        name="code"
         placeholder="密码"
         :rules="userFormRules.code"
         ><i slot="left-icon" class="toutiao toutiao-yanzhengma"></i>\
         <template #button>
-          <van-button native-type="button" class="send-sms-btn" round size="small" type="default"
-            @click="onSendSms">获取验证码</van-button
-          >
+          <van-count-down :time="1000*5" format="ss s" v-if="isCountDownShow" @finish="isCountDownShow=false"/>
+          <van-button v-else native-type="button" class="send-sms-btn" round size="small" type="default"
+            @click="onSendSms()">获取验证码
+            </van-button>
+
         </template>
       </van-field>
       <div class="login-btn-wrap">
@@ -32,7 +34,7 @@
 </template>
 
 <script>
-import { login } from "@/api/user";
+import { login ,sendSms} from "@/api/user";
 export default {
   name: "LoginIndex",
   components: {},
@@ -52,7 +54,8 @@ export default {
           { required: true, message: '请填写用户名' },
           {pattern:/\d{6}/,message:'验证码格式错误'},
           ]
-      }
+      },
+      isCountDownShow:false
     }
   },
   methods: {
@@ -72,6 +75,22 @@ export default {
         this.$toast.fail("手机号或验证码错误")
         else this.$toast.fail("登录失败")
       }
+    },
+   async onSendSms(){
+      try{
+         await this.$refs.loginForm.validate('mobile')
+         }
+      catch(error){
+       return console.log(error)
+        }
+        //验证成功 开始倒计时
+        this.isCountDownShow=true
+        //发送验证码
+         try {
+           await sendSms(this.user.mobile)
+         } catch (error) {
+           console.log('发送失败',error)
+         }
     }
   }
 };
