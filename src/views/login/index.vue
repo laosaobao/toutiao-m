@@ -1,6 +1,10 @@
 <template>
   <div class="login-container">
-    <van-nav-bar title="登录" class="page-nav-bar" />
+    <van-nav-bar title="登录" class="page-nav-bar" >
+  <van-icon slot="left" name="cross" @click="$router.back()"></van-icon>
+    </van-nav-bar>
+
+
     <van-form ref="loginForm" @submit="onSubmit()">
       <van-field
         v-model="user.mobile"
@@ -67,8 +71,10 @@ export default {
         duration:0
       })
       try {
-        const res = await login(user);
-        console.log("登录成功", res);
+        const {data}  = await login(user);
+        this.$store.commit('setUser',data.data)
+        console.log("登录成功", data);
+
         this.$toast.success("登录成功")
       } catch (err) {
         if (err.response.status === 400)
