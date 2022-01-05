@@ -5,7 +5,7 @@ Vue.use(Vuex)
 const TOKEN_KEY='TOUTIAO_USER'
 export default new Vuex.Store({
   state: {
-    user:getItem('TOKEN_KEY')
+    user:getItem(TOKEN_KEY)
   },
   mutations: {
     setUser(state,data){

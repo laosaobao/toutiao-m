@@ -1,13 +1,13 @@
 <template>
   <div class="my-container">
-    <div class="header not-login">
+    <div v-if="!user" class="header not-login">
       <div class="login-btn" @click="$router.push('/login')">
         <img class="mobile-img" src="~@/assets/mobile.png" alt="" />
         <span class="text">登录 / 注册</span>
       </div>
     </div>
 
-    <div class="header user-info">
+    <div v-if="user" class="header user-info">
       <div class="base-info">
         <div class="left">
           <van-image
@@ -39,15 +39,76 @@
           <span class="count">10</span>
           <span class="text">获赞</span>
         </div>
-
       </div>
     </div>
+
+    <!-- 导航 -->
+    <van-grid class="grid-nav" :column-num="2" clickable>
+      <van-grid-item icon="photo-o" text="文字" class="grid-item">
+        <i slot="icon" class="toutiao toutiao-shoucang"></i>
+        <span slot="text" class="text">收藏</span>
+      </van-grid-item>
+      <van-grid-item icon="photo-o" text="文字" class="grid-item">
+        <i slot="icon" class="toutiao toutiao-lishi"></i>
+        <span slot="text" class="text">历史</span>
+      </van-grid-item>
+    </van-grid>
+
+    <van-cell title="消息通知" is-link></van-cell>
+    <van-cell class="mb-9" title="小智同学" is-link></van-cell>
+    <van-cell
+      v-if="user"
+      @click="onLogout()"
+      class="logout-cell"
+      title="退出登录"
+      is-link
+    ></van-cell>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { getUserInfo } from '@/api/user'
+
 export default {
-  name: 'MyIndex'
+  name: 'MyIndex',
+  data() {
+    return {
+      userInfo: {}//用户信息
+    }
+  },
+  computed: {
+    ...mapState(['user']),
+    //user(){return this.$store.state.user}
+  },
+  created() {
+    if (this.user) {
+      this.loadUserInfo()
+    }
+  },
+  methods: {
+    onLogout() {
+      this.$dialog.confirm({
+        title: '确认退出吗'
+      })
+        .then(() => {
+          // on confirm
+          console.log('确认执行这里')
+          this.$store.commit('setUser', null)
+        })
+        .catch(() => {
+          // on cancel
+          console.log('取消执行这里')
+        });
+    },
+    async loadUserInfo() {
+      try {
+        const { data } = await getUserInfo() //解析赋值
+      } catch (error) {
+        this.$toast('获取数据失败')
+      }
+    }
+  }
 }
 </script>
 
@@ -106,17 +167,36 @@ export default {
       // height: 130px;
       background-color: #ccc;
       display: flex;
-      .data-item{
-        height:130px;
+      .data-item {
+        height: 130px;
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        .count{
+        .count {
           font-size: 36px;
         }
-        .text{font-size: 23px;}
+        .text {
+          font-size: 23px;
+        }
+      }
+    }
+  }
+  .grid-nav {
+    .grid-item {
+      height: 141px;
+      i.toutiao {
+        font-size: 45px;
+      }
+      .toutiao-shoucang {
+        color: #eb5253;
+      }
+      .toutiao-lishi {
+        color: #ff9d1d;
+      }
+      span.text {
+        font-size: 28px;
       }
     }
   }

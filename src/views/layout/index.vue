@@ -1,6 +1,5 @@
 <template>
   <div class="layout-container">
-    组件布局
 
     <router-view />
     <van-tabbar route class="layout-tabbar" >
