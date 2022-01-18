@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <van-nav-bar class="page-nav-bar">
+    <van-nav-bar class="page-nav-bar" fixed>
       <van-button
         class="search-btn"
         slot="title"
@@ -17,7 +17,7 @@
       <van-tab
       v-for="channel in channels"
       :key="channel.id"
-      :title="channel.name">{{channel.name}}
+      :title="channel.name">
       <!-- 文章列表 -->
       <ArticleList  :channel="channel"/>
 
@@ -66,6 +66,7 @@ export default {
 
 <style scoped lang="less">
 .home-container {
+  padding-top: 187px;
   padding-bottom: 100px;
   /deep/.van-nav-bar__title {
     max-width: unset;
@@ -84,6 +85,11 @@ export default {
   /deep/.channel-tabs{
     .van-tabs__wrap{
       height: 82px;
+      position: fixed;
+      top: 92px;
+      z-index: 1;
+      left: 0;
+      right: 0;
     }
     .van-tab{
       min-width: 200px;
