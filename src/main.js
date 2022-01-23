@@ -6,6 +6,7 @@ import Vant from 'vant'
 import './style/index.less'
 import 'vant/lib/index.css'
 import 'amfe-flexible'
+import '@/utils/dayjs.js'
 Vue.use(Vant)
 Vue.config.productionTip = false
 
@@ -14,3 +15,4 @@ new Vue({
   store,
   render: h => h(App)
 }).$mount('#app')
+

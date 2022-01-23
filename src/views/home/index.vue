@@ -15,47 +15,57 @@
     <!-- 频道列表 -->
     <van-tabs class="channel-tabs" v-model="active" animated swipeable>
       <van-tab
-      v-for="channel in channels"
-      :key="channel.id"
-      :title="channel.name">
-      <!-- 文章列表 -->
-      <ArticleList  :channel="channel"/>
-
+        v-for="channel in channels"
+        :key="channel.id"
+        :title="channel.name"
+      >
+        <!-- 文章列表 -->
+        <ArticleList :channel="channel" />
       </van-tab>
 
       <div slot="nav-right" class="placeholder"></div>
-      <div slot="nav-right" class="hamburger-btn">
-         <i class="toutiao toutiao-gengduo">
-         </i>
+      <div slot="nav-right" class="hamburger-btn" @click="isChennelEditShow = true">
+        <i class="toutiao toutiao-gengduo"> </i>
       </div>
     </van-tabs>
+    <!-- 频道弹出层 -->
+    <van-popup
+      v-model="isChennelEditShow"
+      closeable
+      position="bottom"
+      :style="{ height: '100%' }"
+    >
+    <channel-edit :my-channels="channels" :active="active"></channel-edit>
+    </van-popup>
   </div>
 </template>
 
 <script>
-import{getUserChannels}from '@/api/user'
+import { getUserChannels } from '@/api/user'
 import ArticleList from './components/article-list.vue'
-
+import ChannelEdit from './components/channel-edit.vue'
 export default {
   name: 'HomeIndex',
-  components:{
-    ArticleList
+  components: {
+    ArticleList,
+    ChannelEdit
   },
-  data(){
-    return{
-      active:0,
-      channels:[] //频道列表
+  data() {
+    return {
+      active: 0,
+      channels: [], //频道列表
+      isChennelEditShow:false
     }
   },
-  created(){
+  created() {
     this.loadChannels()
   },
-  methods:{
-    async loadChannels(){
+  methods: {
+    async loadChannels() {
       try {
-        const{data}=await getUserChannels()
+        const { data } = await getUserChannels()
         console.log(data)
-        this.channels=data.data.channels
+        this.channels = data.data.channels
       } catch (error) {
         this.$toast('获取频道数据失败')
       }
@@ -82,8 +92,8 @@ export default {
     }
   }
 
-  /deep/.channel-tabs{
-    .van-tabs__wrap{
+  /deep/.channel-tabs {
+    .van-tabs__wrap {
       height: 82px;
       position: fixed;
       top: 92px;
@@ -91,31 +101,31 @@ export default {
       left: 0;
       right: 0;
     }
-    .van-tab{
+    .van-tab {
       min-width: 200px;
       border-right: 1px solid #edeff3;
       font-size: 30px;
       color: #777777;
     }
-    .van-tab--active{
+    .van-tab--active {
       color: #333333;
     }
-    .van-tabs__nav{
+    .van-tabs__nav {
       padding-bottom: 0;
     }
-    .van-tabs__line{
+    .van-tabs__line {
       width: 31px;
       height: 6px;
       background-color: #3296fa;
       bottom: 8px;
     }
 
-    .placeholder{
+    .placeholder {
       flex-shrink: 0;
       width: 66px;
       height: 82px;
     }
-    .hamburger-btn{
+    .hamburger-btn {
       position: fixed;
       right: 0;
       display: flex;
@@ -125,10 +135,10 @@ export default {
       height: 82px;
       background-color: #fff;
       opacity: 0.902;
-      i.toutiao{
+      i.toutiao {
         font-size: 33px;
       }
-      &:before{
+      &:before {
         content: "";
         position: absolute;
         left: 0;
