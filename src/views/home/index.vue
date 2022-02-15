@@ -24,18 +24,19 @@
       </van-tab>
 
       <div slot="nav-right" class="placeholder"></div>
-      <div slot="nav-right" class="hamburger-btn" @click="isChennelEditShow = true">
+      <div slot="nav-right" class="hamburger-btn" @click="isChannelEditShow = true">
         <i class="toutiao toutiao-gengduo"> </i>
       </div>
     </van-tabs>
     <!-- 频道弹出层 -->
     <van-popup
-      v-model="isChennelEditShow"
+      v-model="isChannelEditShow"
       closeable
       position="bottom"
       :style="{ height: '100%' }"
     >
-    <channel-edit :my-channels="channels" :active="active"></channel-edit>
+    <channel-edit :my-channels="channels" :active="active"
+    @update-active="onUpdateActive"></channel-edit>
     </van-popup>
   </div>
 </template>
@@ -54,7 +55,7 @@ export default {
     return {
       active: 0,
       channels: [], //频道列表
-      isChennelEditShow:false
+      isChannelEditShow:false
     }
   },
   created() {
@@ -69,6 +70,10 @@ export default {
       } catch (error) {
         this.$toast('获取频道数据失败')
       }
+    },
+    onUpdateActive(index,isChannelEditShow=true){
+        this.active=index
+        this.isChannelEditShow=isChannelEditShow
     }
   }
 }

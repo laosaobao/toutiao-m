@@ -3,19 +3,23 @@
     <van-cell :border="false">
       <div slot="title" class="title-text">我的频道</div>
       <van-button class="edit-btn" type="danger" round plain size="mini"
-        >编辑</van-button
+        @click="isEdit=!isEdit"
+        >{{isEdit ?'完成':'编辑'}}</van-button
       >
     </van-cell>
     <van-grid class="my-grid" :gutter="10">
       <van-grid-item
         class="grid-item"
         v-for="(channel, index) in MyChannels"
-        icon="clear"
         :key="index"
+        @click="onMyChannelClick(channel,index)"
       >
-        <span class="text" slot="text"
-        :class="{active:index===active}">{{channel.name}}</span><!--v-bind:class 对象，key为class类名value为表达式，表达式
-                                                                   结果为true or false true则使用该class类名 反之-->
+        <van-icon v-show="isEdit && !fiexChannels.includes(channel.id)" slot="icon" name="clear"></van-icon>
+        <span class="text" slot="text" :class="{ active: index === active }">{{
+          channel.name
+        }}</span>
+        <!--v-bind:class 对象，key为class类名value为表达式，表达式
+                                             结果为true or false true则使用该class类名 反之-->
       </van-grid-item>
     </van-grid>
 
@@ -27,15 +31,17 @@
       <van-grid-item
         class="grid-item"
         icon="plus"
-        v-for="value in 8"
-        :key="value"
-        text="文字"
+        v-for="(channel, index) in recommendChannels"
+        :key="index"
+        :text="channel.name"
+        @click="onAddChannel(channel)"
       />
     </van-grid>
   </div>
 </template>
 
 <script>
+import { getAllChannels } from '@/api/channel'
 export default {
   name: 'ChannelEdit',
   props: {
@@ -43,10 +49,71 @@ export default {
       type: Array,
       require: true
     },
-    active:{
-        type:Number,
-        require:true
+    active: {
+      type: Number,
+      require: true
     }
+  },
+  computed: {
+    recommendChannels() {
+      // const channels = []
+      // this.allChannels.forEach(channel => {
+      //   const ret = this.MyChannels.find(myChannel => {
+      //     return myChannel.id === channel.id
+      //   })
+      //   if (!ret) {
+      //      channels.push(channel)
+      //   }
+      // });
+      // return channels;
+      //优化写法
+      return this.allChannels.filter(channel => {
+        return !this.MyChannels.find(mychannel => { return channel.id === mychannel.id })
+      }
+      )
+    }
+  },
+  data() {
+    return {
+      allChannels: [],//所有频道
+      isEdit: false,
+      fiexChannels: [0]
+    }
+  },
+  created() {
+    this.loadAllChannels()
+  },
+  methods: {
+    async loadAllChannels() {
+      try {
+        const { data } = await getAllChannels()
+        this.allChannels = data.data.channels
+      } catch (error) {
+        console.log(error)
+        this.$toast('获取数据失败')
+      }
+    },
+    onAddChannel(channel) {
+      this.MyChannels.push(channel)
+    },
+    onMyChannelClick(channel,index){
+      if(this.isEdit)//编辑状态，
+        //固定频道不删除
+      { if(this.fiexChannels.includes(index))
+          {
+            return
+          }
+
+
+        this.MyChannels.splice(index,1)
+        if(index<=this.active)
+        this.$emit('update-active',this.active-1,true)
+      }
+      else{//非编辑状态点击跳转
+          this.$emit('update-active',index,false)
+      }
+    }
+
   }
 
 }
@@ -88,13 +155,17 @@ export default {
     .van-grid-item__content {
       white-space: nowrap;
       background-color: #f4f5f6;
-      .van-grid-item__text,.text{
+      .van-grid-item__text,
+      .text {
         margin-top: 0;
         font-size: 28px;
         color: #222;
       }
-      .active{
-        color:red
+      .active {
+        color: red;
+      }
+      .van-grid-item__icon-wrapper {
+        position: unset;
       }
     }
   }
