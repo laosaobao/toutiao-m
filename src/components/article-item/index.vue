@@ -2,7 +2,7 @@
   <van-cell class="article-item">
     <div slot="title" class="title van-multi-ellipsis--l2">{{ article.title }}</div>
     <div slot="label">
-      <div v-if="article.cover.tyep === 3" class="cover-wrap">
+      <div v-if="article.cover.type === 3" class="cover-wrap">
         <div
           class="cover-item"
           v-for="(img, index) in article.cover.images"
@@ -11,7 +11,7 @@
           <van-image
             class="cover-item-img"
             width="100"
-            height="100"
+            height="80"
             :src="article.cover.images[index]"
           ></van-image>
         </div>

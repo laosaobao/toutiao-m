@@ -2,9 +2,14 @@
   <div class="channel-edit">
     <van-cell :border="false">
       <div slot="title" class="title-text">我的频道</div>
-      <van-button class="edit-btn" type="danger" round plain size="mini"
-        @click="isEdit=!isEdit"
-        >{{isEdit ?'完成':'编辑'}}</van-button
+      <van-button
+        class="edit-btn"
+        type="danger"
+        round
+        plain
+        size="mini"
+        @click="isEdit = !isEdit"
+        >{{ isEdit ? "完成" : "编辑" }}</van-button
       >
     </van-cell>
     <van-grid class="my-grid" :gutter="10">
@@ -12,9 +17,13 @@
         class="grid-item"
         v-for="(channel, index) in MyChannels"
         :key="index"
-        @click="onMyChannelClick(channel,index)"
+        @click="onMyChannelClick(channel, index)"
       >
-        <van-icon v-show="isEdit && !fiexChannels.includes(channel.id)" slot="icon" name="clear"></van-icon>
+        <van-icon
+          v-show="isEdit && !fiexChannels.includes(channel.id)"
+          slot="icon"
+          name="clear"
+        ></van-icon>
         <span class="text" slot="text" :class="{ active: index === active }">{{
           channel.name
         }}</span>
@@ -41,7 +50,9 @@
 </template>
 
 <script>
-import { getAllChannels } from '@/api/channel'
+import { getAllChannels, addUserChannel, deleteUserChannel } from '@/api/channel'
+import { mapState } from 'vuex'
+import { setItem } from '@/utils/storage'
 export default {
   name: 'ChannelEdit',
   props: {
@@ -71,7 +82,8 @@ export default {
         return !this.MyChannels.find(mychannel => { return channel.id === mychannel.id })
       }
       )
-    }
+    },
+    ...mapState(['user'])
   },
   data() {
     return {
@@ -93,25 +105,63 @@ export default {
         this.$toast('获取数据失败')
       }
     },
-    onAddChannel(channel) {
+    async onAddChannel(channel) {
       this.MyChannels.push(channel)
+      //数据持久化
+      if (this.user) {
+        try {
+          //已登录 调用接口
+          await addUserChannel({
+            id: channel.id, //频道id
+            seq: this.MyChannels.length //序号 push完之后的长度
+          })
+        } catch (error) {
+          this.$toast('保存失败，请稍后重试')
+        }
+
+      }
+      else {
+        //未登录，存放本地
+        setItem('TOUTIAO_CHANNELS', this.MyChannels)
+
+      }
+
+
+
     },
-    onMyChannelClick(channel,index){
-      if(this.isEdit)//编辑状态，
-        //固定频道不删除
-      { if(this.fiexChannels.includes(index))
-          {
-            return
-          }
+    onMyChannelClick(channel, index) {
+      if (this.isEdit)//编辑状态，
+      //如果是固定频道则不删除
+      {
+        if (this.fiexChannels.includes(index)) {
+          console.log(mapState)
+          return
+        }
 
 
-        this.MyChannels.splice(index,1)
-        if(index<=this.active)
-        this.$emit('update-active',this.active-1,true)
+        this.MyChannels.splice(index, 1)
+        if (index <= this.active)
+          {this.$emit('update-active', this.active - 1, true)}
+        this.deleteChannel(channel)
       }
-      else{//非编辑状态点击跳转
-          this.$emit('update-active',index,false)
+      else {//非编辑状态点击跳转
+        this.$emit('update-active', index, false)
       }
+    },
+    //删除频道方法
+    async deleteChannel(channel) {
+      try {
+        if (this.user) {
+        //已登录
+        deleteUserChannel(channel.id)
+      }else{
+        //未登录，更新数据到本地
+        setItem('TOUTIAO_CHANNELS',this.MyChannels)
+      }
+      } catch (error) {
+        this.$toast('操作失败，请稍后再试')
+      }
+
     }
 
   }
