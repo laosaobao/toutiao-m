@@ -30,22 +30,15 @@
           <div slot="label" class="publish-date">
             {{ article.pubdate | relativeTime }}
           </div>
-          <van-button
-          v-if="!article.is_followed"
-            class="follow-btn"
-            type="info"
-            color="#3296fa"
-            round
-            size="small"
-            icon="plus"
-            >关注</van-button
-          >
-          <van-button
-          v-else
-            class="follow-btn"
-            round
-            size="small"
-          >已关注</van-button>
+          <!-- //关注组件 -->
+          <!-- :is_followed="article.is_followed"
+            @update-is_follow="article.is_followed = $event"
+            需要传递followed数据，同时子组件需要修改followed数据，上述写法麻烦，使用v-mode，
+            并在子组件自定义v-mode接收参数-->
+          <follow-user
+            :UserId="this.article.aut_id"
+            v-model="article.is_followed"
+          ></follow-user>
         </van-cell>
         <!-- /用户信息 -->
 
@@ -92,9 +85,13 @@
 <script>
 import { getArticleByid } from '@/api/article'
 import { ImagePreview } from 'vant'
+
+import FollowUser from '@/components/follow-user'
 export default {
   name: 'ArticleIndex',
-  components: {},
+  components: {
+    FollowUser
+  },
   props: {
     articleId: {
       type: [Number, String, Object],
@@ -105,7 +102,8 @@ export default {
     return {
       article: {},
       loading: true,
-      errorStatus: 0
+      errorStatus: 0,
+      //   isFollowLoading: false
     }
   },
   computed: {},
@@ -144,7 +142,7 @@ export default {
       let images = []
       imgDoms.forEach((img, index) => {
         images.push(img.src)
-        img.onclick=() => {
+        img.onclick = () => {
           ImagePreview({
             images: images,
             startPosition: index,
@@ -153,7 +151,9 @@ export default {
 
       });//foreach结束
 
-    }
+    },
+
+
   }
 }
 </script>
