@@ -49,6 +49,47 @@
           ref="article-content"
         ></div>
         <van-divider>正文结束</van-divider>
+
+        <!-- 文章评论列表 -->
+        <CommentList
+          :source="article.art_id"
+          @onload-success="totalCommentCount = $event.total_count"
+          :list="comment_list"
+          @reply-click="OnReplyClick"
+        />
+
+        <!-- 底部区域 -->
+        <div class="article-bottom">
+          <van-button
+            class="comment-btn"
+            type="default"
+            round
+            size="small"
+            @click="isPostShow = !isPostShow"
+            >写评论</van-button
+          >
+          <van-icon name="comment-o" :info="totalCommentCount" color="#777" />
+          <CollectArticle
+            class="btn-item"
+            v-model="article.is_collected"
+            :articleId="article.art_id"
+          />
+          <LikeArticle
+            class="btn-item"
+            v-model="article.attitude"
+            :articleId="article.art_id"
+          />
+          <!-- <van-icon color="#777" name="star-o" /> -->
+          <!-- <van-icon color="#777" name="good-job-o" /> -->
+          <van-icon name="share" color="#777777"></van-icon>
+        </div>
+        <!-- 评论框弹出层 -->
+        <van-popup v-model="isPostShow" position="bottom">
+          <comment-post
+            :target="article.art_id"
+            @post-success="OnPostSuccess"
+          />
+        </van-popup>
       </div>
       <!-- /加载完成-文章详情 -->
 
@@ -67,30 +108,45 @@
       </div>
       <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
     </div>
+    <van-popup v-model="isReplyShow"
+    style="height:100%"
+    closeable
+    position="bottom"
+    >
+    <CommentReply
+    v-if="isReplyShow"
+    :comment="currentComment"
+    />
 
-    <!-- 底部区域 -->
-    <div class="article-bottom">
-      <van-button class="comment-btn" type="default" round size="small"
-        >写评论</van-button
-      >
-      <van-icon name="comment-o" info="123" color="#777" />
-      <van-icon color="#777" name="star-o" />
-      <van-icon color="#777" name="good-job-o" />
-      <van-icon name="share" color="#777777"></van-icon>
-    </div>
+     </van-popup>
     <!-- /底部区域 -->
   </div>
 </template>
 
 <script>
 import { getArticleByid } from '@/api/article'
-import { ImagePreview } from 'vant'
-
+import { ImagePreview, Propu } from 'vant'
+import CollectArticle from '@/components/collect-article'
 import FollowUser from '@/components/follow-user'
+import LikeArticle from '@/components/like-article'
+import CommentList from './components/comment-list'
+import CommentPost from './components/comment-post'
+import CommentReply from'./components/comment-reply'
+
 export default {
   name: 'ArticleIndex',
+  provide:function(){
+      return {
+        articleId:  this.articleId
+      }
+  },
   components: {
-    FollowUser
+    FollowUser,
+    CollectArticle,
+    LikeArticle,
+    CommentList,
+    CommentPost,
+    CommentReply
   },
   props: {
     articleId: {
@@ -104,6 +160,12 @@ export default {
       loading: true,
       errorStatus: 0,
       //   isFollowLoading: false
+      totalCommentCount: 0,
+      isPostShow: false,
+      comment_list: [],
+      isReplyShow:false,
+      currentComment:{}
+
     }
   },
   computed: {},
@@ -152,6 +214,18 @@ export default {
       });//foreach结束
 
     },
+    OnPostSuccess(data) {
+      // console.log(data)
+      // console.log(data.new_obj)
+      this.isPostShow = false
+
+      this.comment_list.unshift(data.new_obj)
+    },
+    OnReplyClick(comment){
+        this.currentComment=comment
+        this.isReplyShow=true
+        console.log(comment)
+    }
 
 
   }
@@ -263,7 +337,7 @@ export default {
       line-height: 46px;
       color: #a7a7a7;
     }
-    .van-icon {
+    /deep/.van-icon {
       font-size: 40px;
       .van-info {
         font-size: 16px;
